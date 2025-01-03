@@ -13,6 +13,7 @@ public class LightScript : MonoBehaviour
         foreach (GameObject g in GameObject.FindGameObjectsWithTag("Night Light"))
         {
             nightLights.Add(g.GetComponent<Light>());
+
         }
         dayLights = new List<Light>();
         foreach (GameObject g in GameObject.FindGameObjectsWithTag("Day Light"))

@@ -39,6 +39,7 @@ public class CameraScript : MonoBehaviour
                     if (c.magnitude < fpvRange)
                     {
                         c = c * 0.01f;
+                        GameState.isFpv = true;
    
                     }
                 }
@@ -47,6 +48,7 @@ public class CameraScript : MonoBehaviour
                     if (mouseWheel.y < 0)
                     {
                         c = c / c.magnitude * fpvRange * 1.01f;
+                        GameState.isFpv = false;
                     }
 
                 }
