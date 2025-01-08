@@ -1,14 +1,23 @@
+using System.Runtime.CompilerServices;
 using UnityEngine;
+using UnityEngine.InputSystem.iOS;
 
 public class CharacterScript : MonoBehaviour
 {
     private GameObject player;
     private Rigidbody playerRb;
+    private AudioSource ambientSound;
     void Start()
     {
         player = GameObject.Find("CharacterPlayer");
         playerRb = player.GetComponent<Rigidbody>();
-        
+        ambientSound = GetComponent<AudioSource>();
+
+        GameState.Subscribe(nameof(GameState.ambientVolume), OnAmbientVolumeChanged);
+        GameState.Subscribe(nameof(GameState.isMuted), OnMuteAllChanged);
+        OnAmbientVolumeChanged();
+
+
     }
 
     void Update()
@@ -30,6 +39,19 @@ public class CharacterScript : MonoBehaviour
         player.transform.localEulerAngles = new Vector3(player.transform.eulerAngles.x, 0, player.transform.eulerAngles.z);
     }
 
+    private void OnAmbientVolumeChanged()
+    {
+        ambientSound.volume = GameState.ambientVolume;
+    }
+    private void OnMuteAllChanged()
+    {
+        ambientSound.volume = GameState.isMuted ? 0.0f : GameState.ambientVolume;
+    }
+    private void OnDestroy()
+    {
+        GameState.UnSubscribe(nameof(GameState.ambientVolume), OnAmbientVolumeChanged);
+        GameState.Subscribe(nameof(GameState.isMuted), OnMuteAllChanged);
+    }
 
 
 }

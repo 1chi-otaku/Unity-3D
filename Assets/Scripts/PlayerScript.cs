@@ -10,12 +10,17 @@ public class PlayerScript : MonoBehaviour
 
     private InputAction moveAction;
     private Rigidbody rb;
+    private AudioSource hitlSound;
 
 
     private void Start()
     {
         moveAction = InputSystem.actions.FindAction("Move");
         rb = GetComponent<Rigidbody>();
+        hitlSound = GetComponent<AudioSource>();
+        GameState.Subscribe(nameof(GameState.effectsVolume), OnVolumeChanged);
+        GameState.Subscribe(nameof(GameState.isMuted), OnMuteAllChanged);
+        OnVolumeChanged();
     }
 
     private void Update()
@@ -29,6 +34,34 @@ public class PlayerScript : MonoBehaviour
         rb.AddForce(forceValue);
       
 
+    }
+
+    private void OnCollisionEnter(Collision collision)
+    {
+        if (collision.gameObject.CompareTag("Wall"))
+
+        {
+            if (!hitlSound.isPlaying)
+            {
+                hitlSound.Play();
+            }
+        }
+    }
+
+    private void OnVolumeChanged()
+    {
+        hitlSound.volume = GameState.effectsVolume;
+    }
+    private void OnMuteAllChanged()
+    {
+        hitlSound.volume = GameState.isMuted ? 0.0f : GameState.effectsVolume;
+    }
+
+    private void OnDestroy()
+    {
+
+        GameState.UnSubscribe(nameof(GameState.effectsVolume), OnVolumeChanged);
+        GameState.UnSubscribe(nameof(GameState.isMuted), OnMuteAllChanged);
     }
 
 

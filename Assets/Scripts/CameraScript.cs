@@ -21,12 +21,13 @@ public class CameraScript : MonoBehaviour
         mX = this.transform.eulerAngles.y;
         mY = this.transform.eulerAngles.x;
         lookAction = InputSystem.actions.FindAction("Look");
+        GameState.Subscribe(OnSensitivityChanged, nameof(GameState.sensitivityX), nameof(GameState.sensitivityY));
     }
     private void Update()
     {
         if (fpv) {
 
-            Vector2 mouseWheel = Input.mouseScrollDelta;
+            Vector2 mouseWheel = Input.mouseScrollDelta * Time.timeScale;
             if (mouseWheel.y != 0)
             {
                 if (c.magnitude > maxDistance)
@@ -63,7 +64,7 @@ public class CameraScript : MonoBehaviour
             this.transform.eulerAngles = new Vector3(mY,mX,0);
             
         }
-        if (Input.GetKeyDown(KeyCode.Tab))
+        if (Input.GetKeyDown(KeyCode.Tab) && Time.timeScale != 0)
         {
             fpv = !fpv;
 
@@ -76,7 +77,20 @@ public class CameraScript : MonoBehaviour
         }
     }
 
+    private void OnSensitivityChanged()
+    {
+        // [0..1] ---> [1, 10, 20]
+        
+        sensitivityH = Mathf.Lerp(1, 20, GameState.sensitivityX);
+        sensitivityV = Mathf.Lerp(1, 20, GameState.sensitivityY);
+    }
 
+
+
+    private void OnDestroy()
+    {
+        GameState.UnSubscribe(OnSensitivityChanged, nameof(GameState.sensitivityX), nameof(GameState.sensitivityY));
+    }
     void LateUpdate()
     {
         if (fpv)
