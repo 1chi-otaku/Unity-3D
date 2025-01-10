@@ -32,8 +32,7 @@ namespace Assets.Scripts
 
                     bool isInTime = GameState.collectedKeys["2"];
                     timeout = isInTime ? inTimeTimeout : outTimeTimeout;
-                    ToastScript.ShowToast("Ключ \"2\" застосовано" +
-                    (isInTime ? " вчасно" : " нe вчасно"));
+                    ToastScript.ShowToast("Key 2 has been used");
 
                     Destroy(gameObject);
                 }

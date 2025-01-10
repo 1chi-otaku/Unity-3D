@@ -1,4 +1,5 @@
 using System;
+using Unity.VisualScripting.Antlr3.Runtime.Tree;
 using UnityEngine;
 using UnityEngine.InputSystem.iOS;
 using UnityEngine.UI;
@@ -26,13 +27,13 @@ public class SettingScript : MonoBehaviour
         Transform contentTransform = transform.Find("Content");
         content = contentTransform.gameObject;
 
-        effectsVolumeSlider = contentTransform.Find("Effects").GetComponent<Slider>();
+        effectsVolumeSlider = contentTransform.Find("Sound/Effects").GetComponent<Slider>();
         defaultEffectsVolume = effectsVolumeSlider.value;
 
-        ambientVolumeSlider = contentTransform.Find("Ambient").GetComponent<Slider>();
+        ambientVolumeSlider = contentTransform.Find("Sound/Ambient").GetComponent<Slider>();
         defaultAmbientVolume = ambientVolumeSlider.value;
 
-        musicVolumeSlider = contentTransform.Find("Music").GetComponent<Slider>();
+        musicVolumeSlider = contentTransform.Find("Sound/Music").GetComponent<Slider>();
         defaultMusicVolume = musicVolumeSlider.value;
 
         sensXSlider = contentTransform.Find("SliderX").GetComponent<Slider>();
@@ -41,10 +42,12 @@ public class SettingScript : MonoBehaviour
         sensYSlider = contentTransform.Find("SliderY").GetComponent<Slider>();
         defaultSensY = sensYSlider.value;   
 
-        muteAllToggle = contentTransform.Find("Toggle").GetComponent<Toggle>();
+        muteAllToggle = contentTransform.Find("Sound/Toggle").GetComponent<Toggle>();
 
 
         GameState.isMuted = muteAllToggle.isOn;
+
+        LoadDifficulty();
 
 
         //Try Restore Saved
@@ -122,6 +125,30 @@ public class SettingScript : MonoBehaviour
         }
     }
 
+    #region diff propdown
+
+    private TMPro.TMP_Dropdown difficultyDropdown;
+    private int defaultDiff;
+
+    private void LoadDifficulty()
+    {
+        difficultyDropdown = this.transform.Find("Content/Difficulty/Dropdown").GetComponent<TMPro.TMP_Dropdown>();
+        defaultDiff = difficultyDropdown.value;
+        if (PlayerPrefs.HasKey(nameof(GameState.difficulty)))
+        {
+            GameState.difficulty = (GameState.GameDifficulty)PlayerPrefs.GetInt(nameof(GameState.difficulty));
+            difficultyDropdown.value = (int)GameState.difficulty;
+        }
+        else
+        {
+            GameState.difficulty = (GameState.GameDifficulty)difficultyDropdown.value;
+        }
+
+        Debug.Log("Load Dif" + GameState.difficulty);
+    }
+
+    #endregion
+
     public void CloseSettings()
     {
 
@@ -136,6 +163,7 @@ public class SettingScript : MonoBehaviour
         effectsVolumeSlider.value = defaultEffectsVolume;
         sensXSlider.value = defaultSensX;
         sensYSlider.value = defaultSensY;
+        difficultyDropdown.value = defaultDiff;   
     }
 
     public void OnExitClick()
@@ -151,6 +179,7 @@ public class SettingScript : MonoBehaviour
         PlayerPrefs.SetFloat(nameof(GameState.sensitivityX), GameState.sensitivityX);
         PlayerPrefs.SetFloat(nameof(GameState.sensitivityY), GameState.sensitivityY);
         PlayerPrefs.SetInt(nameof(GameState.isMuted), GameState.isMuted ? 1 : 0);
+        PlayerPrefs.SetInt(nameof(GameState.difficulty), (int)GameState.difficulty);
 
         PlayerPrefs.Save();
         CloseSettings();
@@ -178,5 +207,11 @@ public class SettingScript : MonoBehaviour
     public void OnSensYChanged(Single value)
     {
         GameState.sensitivityY = value;
+    }
+
+    public void OnDifficultyChanged(int selectedIndes)
+    {
+        GameState.difficulty = (GameState.GameDifficulty) selectedIndes;
+        Debug.Log(GameState.difficulty);
     }
 }

@@ -1,5 +1,7 @@
 using System.Collections.Generic;
+using System.Linq;
 using UnityEngine;
+using UnityEngine.UI;
 
 public class ToastScript : MonoBehaviour
 {
@@ -9,6 +11,7 @@ public class ToastScript : MonoBehaviour
     private GameObject content;
     [SerializeField]
     private TMPro.TextMeshProUGUI toastTMP;
+
 
     private static ToastScript instance;
 
@@ -26,12 +29,15 @@ public class ToastScript : MonoBehaviour
             message = message,
             timeout = timeout ?? instance.timeout
         });
+
+       
     }
 
 
     void Start()
     {   
         instance = this;
+        GameState.SubscribeTrigger(BroadcastListener);
     }
 
     void Update()
@@ -58,6 +64,51 @@ public class ToastScript : MonoBehaviour
             }
         }
 
+
+    }
+
+    private void BroadcastListener(string type, object payload)
+    {
+        string[] toastedTypes = { "Battery" };
+        if (toastedTypes.Contains(type))
+        {
+            ShowToast($"{type}: {payload.ToString() ?? ""}");
+        }
+
+        if(payload is TriggerPayload triggerPayload)
+        {
+            if(triggerPayload.notification != null)
+            {
+                ShowToast(triggerPayload.notification);
+            }
+        }
+       
+    }
+
+    //private void KeyGotListener(string type, object payload)
+    //{
+    //    string[] toastedTypes = { "Key" };
+    //    if (toastedTypes.Contains(type))
+    //    {
+    //        ShowToast($"You collected key: {payload.ToString() ?? "unknown"}");
+    //        key1Image.enabled = true;
+
+    //        switch (payload.ToString())
+    //        {
+    //            case "1":
+    //                key1Image.enabled = true;
+    //            break;
+    //            case "2":
+    //                key2Image.enabled = true;
+    //            break;
+    //        }
+    //    }
+
+    //}
+
+    private void OnDestroy()
+    {
+        GameState.UnSubscribeTrigger(BroadcastListener);
 
     }
 

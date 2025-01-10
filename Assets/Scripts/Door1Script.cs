@@ -9,6 +9,7 @@ namespace Assets.Scripts
         private float inTimeTimeout = 2.0f;
         private float outTimeTimeout = 5.0f;
         private float timeout;
+        [SerializeField] string keyNeeded = null;
 
         private AudioSource hitsound;
         private AudioSource opensound;
@@ -30,15 +31,20 @@ namespace Assets.Scripts
             if (collision.gameObject.name == "Player")
             {
 
-                if (GameState.collectedKeys.Keys.Contains("1"))
+                if (GameState.collectedKeys.Keys.Contains(keyNeeded))
                 {
 
-                    bool isInTime = GameState.collectedKeys["1"];
+                    bool isInTime = GameState.collectedKeys[keyNeeded];
                     timeout = isInTime ? inTimeTimeout : outTimeTimeout;
-                    
 
-                    ToastScript.ShowToast("Ключ \"1\" застосовано" +
-                    (isInTime ? " вчасно" : " нe вчасно"));
+                    GameState.TriggerEvent("Door", new TriggerPayload()
+                    {
+                        notification = "Door " + keyNeeded +  " has been unlocked" + (isInTime ? " in time" : " late"),
+                        payload = "Opened"
+                    });
+
+
+   
                     opensound.Play();
 
 
@@ -48,7 +54,11 @@ namespace Assets.Scripts
 
                 else
                 {
-                    ToastScript.ShowToast("Для відкриття двері потрібен ключ \"1\"");
+                    GameState.TriggerEvent("Door", new TriggerPayload()
+                    {
+                        notification = "In order to open the door, you need key " + keyNeeded,
+                        payload = "Closed"
+                    });
                     hitsound.Play();
                 }
 

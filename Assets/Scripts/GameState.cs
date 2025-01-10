@@ -1,11 +1,15 @@
+using NUnit.Framework.Constraints;
 using System;
 using System.Collections.Generic;
+using Unity.VisualScripting;
+using UnityEngine;
+using UnityEngine.SocialPlatforms.Impl;
 
 public class GameState
 {
     public static bool isFpv { get; set; }
-    public static float flashCharge { get; set; }
-    public static Dictionary<string, bool> collectedKeys { get;} = new Dictionary<string, bool>();
+    //public static float flashCharge { get; set; }
+    public static Dictionary<string, bool> collectedKeys { get; } = new Dictionary<string, bool>();
 
     private static float _effectsVolume = 1.0f;
 
@@ -79,6 +83,44 @@ public class GameState
             }
         }
     }
+
+
+    public static float _score = 0;
+    public static float score
+    {
+        get => _score;
+        set
+        {
+            if (_score != value)
+            {
+                _score = value;
+                NotifySubscribers(nameof(score));
+            }
+        }
+    }
+
+        #region Difficulty
+
+    private static GameDifficulty _difficulty = GameDifficulty.Normal;
+    public static GameDifficulty difficulty
+    {
+        get => _difficulty;
+        set
+        {
+            if (_difficulty != value)
+            {
+                _difficulty = value;
+                NotifySubscribers(nameof(_difficulty));
+            }
+        }
+    }
+    public enum GameDifficulty
+    {
+        Easy, Normal,Hard
+
+    }
+
+    #endregion
 
 
     private static bool _isMuted = false;
@@ -160,4 +202,67 @@ public class GameState
 
     }
 
+  
+
+    #region Game Events
+
+    private const string broadcastKey = "Broadcast";
+
+    public static void TriggerEvent(string type, object payload = null)
+    {
+        if (eventListeners.ContainsKey(type))
+        {
+            foreach (var eventListener in eventListeners[type])
+            {
+                eventListener(type, payload);
+            }
+        }
+        if (eventListeners.ContainsKey(broadcastKey))
+        {
+            foreach (var eventListener in eventListeners[broadcastKey])
+            {
+                eventListener(type, payload);
+            }
+        }
+    }
+    private static Dictionary<string, List<Action<string, object>>> eventListeners = new();
+    public static void SubscribeTrigger(Action<string, object> action, params string[] types)
+    {
+
+        if (types.Length == 0)
+        {
+            types = new string[1] { broadcastKey };
+        }
+        foreach (var type in types)
+        {
+            if (!eventListeners.ContainsKey(type))
+            {
+                eventListeners[type] = new List<Action<string, object>>();
+            }
+            eventListeners[type].Add(action);
+        }
+    }
+
+    public static void UnSubscribeTrigger(Action<string, object> action, params string[] types)
+    {
+
+        if (types.Length == 0)
+        {
+            types = new string[1] { broadcastKey };
+        }
+        foreach (var type in types)
+        {
+            if (eventListeners.ContainsKey(type))
+            {
+                eventListeners[type].Remove(action);
+                if (eventListeners[type].Count == 0)
+                {
+                    eventListeners.Remove(type);
+                }
+            }
+        }
+
+        #endregion
+
+    }
 }
